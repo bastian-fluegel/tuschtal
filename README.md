@@ -35,12 +35,13 @@ Dann http://localhost:8000 öffnen.
 | features.js | Andockpunkte (Hooks) für abschaltbare Module |
 
 ## Module (js/features/) – abschaltbar
-In `config.js`: `FEATURES = { cooking: true, crafting: true }`. Auf `false` gesetzt, wird das Modul gar nicht geladen.
+In `config.js`: `FEATURES = { cooking: true, crafting: true, feel: true }`. Auf `false` gesetzt, wird das Modul gar nicht geladen.
 
 | Modul | Inhalt |
 |---|---|
 | cooking.js | Pilze, Kräuter, Angeln, Wasser schöpfen, Kochstelle mit Spieß/Topf/Pfanne, 12 Rezepte, Rezeptbuch, Haltbarkeit |
 | crafting.js | Steine, Fasern, Lehm, Bretter, Seil, Werkbank, 6 Werkzeuge mit Effekten, 15 Möbel, Truhe, Rucksack-Plätze |
+| feel.js | Spielgefühl: Fortschritt beim Sammeln (Knopf füllt sich, Kamera bückt sich, Axthiebe), Pigment-Partikel, schwebende Zahlen, aufleuchtende Werte, Schritte, Wippen, Landen, Schlaf mit vorlaufender Uhr |
 
 Ein neues Modul: Datei in `js/features/` anlegen, ein Objekt mit Hooks exportieren (siehe Kopf von features.js) und in main.js wie cooking registrieren.
 
@@ -49,6 +50,8 @@ Ein neues Modul: Datei in `js/features/` anlegen, ein Objekt mit Hooks exportier
 - Neues Möbelstück: Eintrag in `FURNITURE`, neues Werkzeug: Eintrag in `TOOLS` (features/crafting.js).
 - Werkzeug-Effekte wirken über `MODS` (state.js) – jedes Modul darf sie lesen.
 - Neues rohes Lebensmittel: `ITEMS` + `FOODS` in config.js.
+- Eine Aktion mit Fortschritt: der Aktion `work` (Sekunden) und `anim` (`'pick' | 'chop' | 'scoop' | 'stoke'`) mitgeben. Ohne Modul `feel` läuft sie sofort.
+- Rückmeldung für etwas Neues: `emit('gain', { k, n, x, y, z })` aus features.js aufrufen.
 - Neues Bauteil: Eintrag in `PIECES` (pieces.js). `use: 'sleep' | 'drink' | 'fire'` macht es benutzbar.
 - Neuer Wert (z. B. Laune): in `STATS` (config.js) und `S` (state.js) ergänzen, Verlauf in `tickLife` (survival.js).
 - Neues Tier: Geometrie in `GEO_A` (fauna.js), Verhalten in `updateAnimals`.

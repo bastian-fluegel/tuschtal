@@ -17,6 +17,7 @@ import { toast, drawInv } from '../ui.js';
 import { advance, saveLife } from '../survival.js';
 import { sfx, burst } from '../audio.js';
 import { splash } from '../fauna.js';
+import { emit } from '../features.js';
 
 /* ---------- Daten ---------- */
 const NEW_ITEMS = {
@@ -90,6 +91,7 @@ function chunk(ch, cx, cz) {
 function fill() {
   if (!give(ITEMS, 'water', 1)) { toast('Dein Rucksack ist voll.'); return; }
   burst(700, 'lowpass', .25, .08); toast(`Wasser abgefüllt (${INV.water}/${MODS.waterMax}). Gut zum Kochen und für unterwegs.`);
+  emit('gain', { k: 'water', n: 1 });
   drawInv(); saveLife();
 }
 
@@ -112,7 +114,7 @@ function startFish() {
 function stopFish(msg) { fishing.state = 'idle'; bob.visible = false; if (msg) toast(msg); }
 function catchFish() {
   if (!give(ITEMS, 'fish', 1)) { stopFish('Der Fisch passt nicht mehr in den Rucksack.'); return; }
-  splash(bob.position.x, bob.position.z);
+  splash(bob.position.x, bob.position.z); emit('gain', { k: 'fish', n: 1, x: bob.position.x, y: .3, z: bob.position.z });
   stopFish('Ein Fisch! Brat oder koch ihn bald, er hält nur bis morgen.'); drawInv(); saveLife();
 }
 function update(dt, ts) {
@@ -182,7 +184,7 @@ function cook() {
     if (Math.random() < .25) burst(st.tool === 'topf' ? 500 : 1700, st.tool === 'topf' ? 'lowpass' : 'highpass', .06, .05);
     if (k < 1) { requestAnimationFrame(tick); return; }
     for (const k2 of st.slots) INV[k2]--;
-    INV[r.id] = (INV[r.id] || 0) + 1; advance(.5); sfx('pick');
+    INV[r.id] = (INV[r.id] || 0) + 1; advance(.5); sfx('pick'); emit('done');
     const fresh = !book.has(r.id); book.add(r.id); saveBook();
     toast(fresh ? `Neues Rezept entdeckt: ${r.name}!` : `${r.name} ist fertig. Du findest es im Rucksack.`);
     const again = [...st.slots]; st.slots = []; again.forEach(k2 => { if (avail(k2) > 0) st.slots.push(k2); });
@@ -263,7 +265,7 @@ export default {
   fireActions: p => p.def.fire ? [{ label: 'Kochen', run: () => openCook(p) }] : [],
   waterActions: ctx => {
     const out = [];
-    if ((INV.water || 0) < MODS.waterMax) out.push({ label: 'Wasser schöpfen', run: fill });
+    if ((INV.water || 0) < MODS.waterMax) out.push({ label: 'Wasser schöpfen', run: fill, work: .7, anim: 'scoop' });
     if (ctx.lake) out.push({ label: 'Angeln', run: startFish });
     return out;
   },

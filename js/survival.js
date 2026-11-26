@@ -1,4 +1,4 @@
-import { collect, hook } from './features.js';
+import { collect, hook, emit } from './features.js';
 import { $, BALANCE, FOODS, ITEMS, CS, GAME_HOUR, LKEY, STATS, WARN, clamp } from './config.js';
 import { G, INV, S, T, fruitAvail, pos, woodAvail, MODS, give } from './state.js';
 import { U } from './shaders.js';
@@ -57,32 +57,40 @@ export function eat(k) {
   if (!INV[k]) { toast(`Keine ${ITEMS[k] ? ITEMS[k].name : k} mehr.`); return; }
   INV[k]--;
   for (const st of ['food', 'water', 'warm', 'energy']) if (f[st]) S[st] = Math.min(100, S[st] + f[st]);
-  toast(f.msg); drawInv(); saveLife();
+  toast(f.msg); emit('eat', { k }); drawInv(); saveLife();
 }
-export function drink() { S.water = Math.min(100, S.water + 30); toast('Kühles, klares Wasser.'); saveLife(); }
+export function drink() { S.water = Math.min(100, S.water + 30); toast('Kühles, klares Wasser.'); emit('drink'); saveLife(); }
 export function harvest(it) {
   const I = ITEMS[it.fk] || { name: it.fk, yield: [1, 1] }, [lo, hi] = I.yield || [1, 1];
   const want = lo + Math.floor(Math.random() * (hi - lo + 1)) + MODS.harvestBonus, n = give(ITEMS, it.fk, want);
   if (!n) { toast('Dein Rucksack ist voll. Iss etwas oder bring Sachen in eine Truhe.'); return; }
   G.picked[it.key] = T.day; buildFruit(it.owner);
-  toast(`${n} × ${n === 1 ? I.one : I.name} eingesammelt.` + (n < want ? ' Der Rucksack ist jetzt voll.' : '')); sfx('pick'); drawInv(); saveLife();
+  toast(`${n} × ${n === 1 ? I.one : I.name} eingesammelt.` + (n < want ? ' Der Rucksack ist jetzt voll.' : '')); sfx('pick');
+  emit('gain', { k: it.fk, n, x: it.x, y: it.y + (SMALL.has(it.kind) ? .25 : .9), z: it.z }); drawInv(); saveLife();
 }
 export function takeWood(it) {
   const w = G.woodUsed[it.key] && G.woodUsed[it.key].d === T.day ? G.woodUsed[it.key] : { d: T.day, n: 0 };
   const n = give(ITEMS, 'wood', MODS.woodGain);
   if (!n) { toast('Dein Rucksack ist voll.'); return; }
-  w.n++; G.woodUsed[it.key] = w; toast(n > 1 ? `${n} Bündel Holz gesammelt.` : 'Ein Bündel Holz gesammelt.'); drawInv(); saveLife();
+  w.n++; G.woodUsed[it.key] = w; toast(n > 1 ? `${n} Bündel Holz gesammelt.` : 'Ein Bündel Holz gesammelt.');
+  emit('gain', { k: 'wood', n, x: it.x, y: it.y + 1.1, z: it.z }); drawInv(); saveLife();
 }
 export function stoke(p) {
   if (INV.wood < 1) { toast('Du brauchst Holz. Sammle es an Bäumen.'); return; }
   const was = (G.fires[p.fkey] || 0) > 0;
   INV.wood--; G.fires[p.fkey] = Math.min(14, (G.fires[p.fkey] || 0) + 4);
-  toast(was ? 'Holz nachgelegt, das Feuer knistert.' : 'Das Feuer brennt.'); drawInv(); saveLife();
+  toast(was ? 'Holz nachgelegt, das Feuer knistert.' : 'Das Feuer brennt.');
+  worldPt(p, p.def.fire, _w); emit('fire', { x: _w.x, y: _w.y, z: _w.z }); drawInv(); saveLife();
 }
 export const fade = $('#fade');
+/* Schwarzbild: Module dürfen es über rest() verlängern, um den Zeitsprung zu zeigen */
 export function blackout(text, fn) {
   G.paused = true; fade.textContent = text; fade.classList.add('on');
-  setTimeout(() => { fn(); setTimeout(() => { fade.classList.remove('on'); G.paused = false; }, 700); }, 1300);
+  setTimeout(() => {
+    const before = { T: { ...T }, S: { ...S } }; fn();
+    const extra = Math.max(0, ...collect('rest', before).filter(Number.isFinite));
+    setTimeout(() => { fade.classList.remove('on'); G.paused = false; }, 700 + extra);
+  }, 1300);
 }
 export function sleep() {
   const h = T.hour, night = h >= 19 || h < 5, hours = night ? ((24 - h + 7) % 24 || 8) : 3;
@@ -115,11 +123,11 @@ export function findAction() {
     if (!p.def.use) continue;
     const d = Math.hypot(p.x - pos.x, p.z - pos.z); if (d > 2.4 || Math.abs(p.y - pos.y) > 2) continue;
     if (p.def.use === 'sleep') offer(d, { label: 'Schlafen', run: sleep });
-    else if (p.def.use === 'drink') offer(d, { label: 'Trinken', run: drink, more: collect('waterActions', { lake: false }) });
+    else if (p.def.use === 'drink') offer(d, { label: 'Trinken', run: drink, work: .6, anim: 'scoop', at: p, more: collect('waterActions', { lake: false }) });
     else if (p.def.use !== 'fire') { const pa = collect('pieceActions', p); if (pa.length) offer(d, { ...pa[0], more: pa.slice(1) }); }
     else {
       const lit = (G.fires[p.fkey] || 0) > 0;
-      const feed = { label: lit ? 'Holz nachlegen' : 'Feuer anzünden', run: () => stoke(p) };
+      const feed = { label: lit ? 'Holz nachlegen' : 'Feuer anzünden', run: () => stoke(p), work: INV.wood >= 1 ? .5 : 0, anim: 'stoke', at: p };
       const fa = lit ? collect('fireActions', p) : [];
       offer(d, fa.length ? { ...fa[0], more: [...fa.slice(1), feed] } : feed);
     }
@@ -131,10 +139,10 @@ export function findAction() {
   for (const o of owners) for (const it of o.items) {
     const d = Math.hypot(it.x - pos.x, it.z - pos.z), reach = SMALL.has(it.kind) ? 1.9 : 2.3;
     if (d > reach || Math.abs(it.y - pos.y) > 2.5) continue;
-    if (fruitAvail(it)) offer(d, { label: (ITEMS[it.fk] && ITEMS[it.fk].pick) || 'Einsammeln', run: () => harvest(it) });
-    else if (TREES.has(it.kind) && woodAvail(it)) offer(d + .3, { label: 'Holz sammeln', run: () => takeWood(it) });
+    if (fruitAvail(it)) offer(d, { label: (ITEMS[it.fk] && ITEMS[it.fk].pick) || 'Einsammeln', run: () => harvest(it), work: SMALL.has(it.kind) ? .6 : .8, anim: 'pick', at: it });
+    else if (TREES.has(it.kind) && woodAvail(it)) offer(d + .3, { label: 'Holz sammeln', run: () => takeWood(it), work: 1.2, anim: 'chop', at: it });
   }
-  if (!best && waterNear()) best = { label: 'Trinken', run: drink, more: collect('waterActions', { lake: true }) };
+  if (!best && waterNear()) best = { label: 'Trinken', run: drink, work: .6, anim: 'scoop', more: collect('waterActions', { lake: true }) };
   return best;
 }
 export function saveLife() {

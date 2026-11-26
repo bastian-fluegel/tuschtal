@@ -18,6 +18,7 @@ import { addPiece } from '../building.js';
 import { toast, drawInv } from '../ui.js';
 import { advance, saveLife } from '../survival.js';
 import { sfx, burst } from '../audio.js';
+import { emit } from '../features.js';
 
 /* ---------- Materialien ---------- */
 const MATERIALS = {
@@ -133,7 +134,7 @@ function make(id) {
     for (const [k2, n] of Object.entries(x.needs)) INV[k2] -= n;
     const [g, n] = x.give, got = give(ITEMS, g, n);
     if (got < n) { INV[g] -= got; for (const [k2, m] of Object.entries(x.needs)) INV[k2] += m; toast('Kein Platz im Rucksack. Bring etwas in eine Truhe.'); }
-    else { advance(.25); sfx('pick'); applyTools(); toast(x.once ? `${x.name} hergestellt: ${x.effect}.` : `${x.name} hergestellt.` + (tab === 'moebel' ? ' Stell es im Baumodus auf.' : '')); }
+    else { advance(.25); sfx('pick'); emit('done'); applyTools(); toast(x.once ? `${x.name} hergestellt: ${x.effect}.` : `${x.name} hergestellt.` + (tab === 'moebel' ? ' Stell es im Baumodus auf.' : '')); }
     busy = false; drawCraft(); drawInv(); saveLife();
   };
   requestAnimationFrame(tick);

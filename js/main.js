@@ -15,6 +15,7 @@
    Module (abschaltbar in config.js → FEATURES):
      features/cooking   Pilze, Kräuter, Angeln, Kochstelle, Rezeptbuch
      features/crafting  Steine, Fasern, Lehm, Werkbank, Werkzeuge, Möbel, Truhe
+     features/feel      Spielgefühl: Fortschritt beim Sammeln, Partikel, Schritte, Schlaf-Uhr
    ============================================================ */
 import { $, loadMsg, FEATURES } from './config.js';
 import { register, hook } from './features.js';
@@ -97,6 +98,7 @@ setTimeout(async () => {
     /* Module laden – in config.js unter FEATURES abschaltbar */
     if (FEATURES.cooking) { loadMsg('Rezepte werden gesammelt'); register((await import('./features/cooking.js')).default); }
     if (FEATURES.crafting) { loadMsg('Die Werkbank wird aufgestellt'); register((await import('./features/crafting.js')).default); }
+    if (FEATURES.feel) { loadMsg('Farbe wird angerührt'); register((await import('./features/feel.js')).default); }
     loadMsg('Bauteile werden skizziert'); makeThumbs(); buildPalette(); setTool(0);
     loadMsg('Landschaft wird lasiert'); updateChunks(true); loadBuild();
     loadMsg('Tiere werden geweckt'); makeAnimals(); makeBirds(); makeBugs();

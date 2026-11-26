@@ -7,6 +7,7 @@ import { drawInv, toast } from './ui.js';
 import { height } from './terrain.js';
 import { terrainMeshes } from './world.js';
 import { P, merge } from './geometry.js';
+import { emit } from './features.js';
 
 /* ---------- BAUTEILE IN DER WELT ---------- */
 export const pieces = [], undo = [], tweens = [];
@@ -62,7 +63,7 @@ export function buildAt(nx, ny, forceErase) {
     if (p.rec.world) { toast('Das Häuschen bleibt stehen.'); return; }
     if (p.def.costItems) { for (const [k, n] of Object.entries(p.def.costItems)) INV[k] = (INV[k] || 0) + n; drawInv(); }
     if (p.def.cost) { INV.wood = (INV.wood || 0) + p.def.cost; drawInv(); toast(`${p.def.cost} Holz zurückbekommen.`); }
-    removePiece(p); undo.push({ del: p.rec }); saveBuild(); return;
+    emit('erase', { x: p.x, y: p.y, z: p.z }); removePiece(p); undo.push({ del: p.rec }); saveBuild(); return;
   }
   const s = slotFrom(hit); if (!s) return;
   const def = PIECES[G.tool];
@@ -75,7 +76,7 @@ export function buildAt(nx, ny, forceErase) {
   const rec = { t: def.id, x: s.x, y: Math.round(s.y * 100) / 100, z: s.z, r: G.rot };
   if (s.depth > .15) rec.d = Math.round(s.depth * 100) / 100;
   const p = addPiece(rec, true);
-  if (p) { undo.push({ add: p }); saveBuild(); }
+  if (p) { undo.push({ add: p }); saveBuild(); emit('build', { x: p.x, y: p.y, z: p.z }); }
 }
 export function doUndo() {
   const u = undo.pop(); if (!u) return;

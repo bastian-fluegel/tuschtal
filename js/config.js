@@ -24,7 +24,7 @@ export const STATS = [['food', 'Essen', '#c98b3e'], ['water', 'Trinken', '#4f86b
 export const WARN = { food: 'Dein Magen knurrt. Zeit für Beeren oder Äpfel.', water: 'Du hast Durst. Geh zum Brunnen oder an einen See.', energy: 'Du bist müde. Dein Bett wartet im Häuschen.', warm: 'Dir ist kalt. Ab ins Haus, am besten an den Kamin.' };
 
 /* Module ein- und ausschalten: false = Modul wird gar nicht erst geladen */
-export const FEATURES = { cooking: true, crafting: true };
+export const FEATURES = { cooking: true, crafting: true, feel: true };
 /* Kategorien im Rucksack (Reihenfolge der Anzeige) */
 export const CATS = { nahrung: 'Nahrung', gericht: 'Gerichte', zutat: 'Zutaten', material: 'Material', tool: 'Werkzeuge', moebel: 'Möbel und Deko' };
 

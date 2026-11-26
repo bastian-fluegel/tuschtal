@@ -34,17 +34,42 @@ export function cricket() {
   for (let i = 0; i < 3; i++) { const s = t0 + i * .06; g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(.012, s + .01); g.gain.linearRampToValueAtTime(0, s + .04); }
   o.start(t0); o.stop(t0 + .25);
 }
-export function burst(freq, type, dur, vol) {
+export function burst(freq, type, dur, vol, delay = 0) {
   if (!AC || !G.soundOn) return;
-  const t0 = AC.currentTime, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  const t0 = AC.currentTime + delay, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
   s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
   s.connect(f).connect(g).connect(master); s.start(t0, Math.random()); s.stop(t0 + dur);
 }
+/* tone: kurzer Ton, der von f0 nach f1 gleitet */
+export function tone(f0, f1, dur, vol, type = 'sine', delay = 0) {
+  if (!AC || !G.soundOn) return;
+  const t0 = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol, t0 + .012); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+  o.connect(g).connect(master); o.start(t0); o.stop(t0 + dur + .02);
+}
 export function sfx(kind, dist = 0) {
   if (!AC || !G.soundOn) return;
-  const v = Math.max(0, 1 - dist / 40);
+  const v = Math.max(0, 1 - dist / 40), j = .85 + Math.random() * .3;
   if (kind === 'splash' && v > 0) burst(900, 'lowpass', .35, .14 * v);
   if (kind === 'pick') burst(2500, 'bandpass', .08, .08);
+  /* Schritte und Landen */
+  if (kind === 'step') { burst(1300 * j, 'bandpass', .07, .022); burst(450 * j, 'lowpass', .05, .02); }
+  if (kind === 'stepWood') { burst(360 * j, 'bandpass', .07, .055); burst(1000 * j, 'bandpass', .03, .015); }
+  if (kind === 'stepWater') burst(1000 * j, 'lowpass', .14, .045);
+  if (kind === 'land') burst(240, 'lowpass', .16, .11);
+  /* Arbeiten */
+  if (kind === 'rustle') burst(3000 * j, 'highpass', .13, .035);
+  if (kind === 'chop') { burst(300 * j, 'bandpass', .1, .17); burst(1500 * j, 'bandpass', .04, .05); }
+  if (kind === 'scoop') { burst(750, 'lowpass', .3, .09); burst(1600, 'bandpass', .12, .025, .12); }
+  if (kind === 'gulp') { tone(240, 150, .12, .05); tone(220, 140, .12, .04, 'sine', .22); }
+  if (kind === 'crunch') for (let i = 0; i < 3; i++) burst(1700 * j, 'bandpass', .06, .06, i * .13);
+  if (kind === 'whoosh') { burst(500, 'lowpass', .45, .09); for (let i = 0; i < 4; i++) burst(1900, 'highpass', .04, .05, .1 + i * .09); }
+  /* Rückmeldungen */
+  if (kind === 'gain') tone(620 * j, 940 * j, .09, .035);
+  if (kind === 'thock') { burst(220, 'lowpass', .13, .14); tone(170, 110, .1, .05, 'triangle'); }
+  if (kind === 'erase') { burst(2600, 'bandpass', .16, .05); burst(1800, 'bandpass', .12, .04, .08); }
+  if (kind === 'chime') { tone(880, 880, .5, .04, 'sine'); tone(1320, 1320, .6, .03, 'sine', .12); }
 }
 export function updateSound(dt, t) {
   if (!AC || !G.soundOn || G.paused) { if (windGain) windGain.gain.value = 0; return; }

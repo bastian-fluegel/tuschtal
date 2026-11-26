@@ -9,7 +9,7 @@ import { PIECES } from './pieces.js';
 import { buildAt, doUndo, ghost, pieces, removePiece, saveBuild, undo } from './building.js';
 import { buildFruit, chunks } from './world.js';
 import { eat, saveLife, rebuildAllFruit } from './survival.js';
-import { hook } from './features.js';
+import { hook, collect } from './features.js';
 import { height } from './terrain.js';
 import { hold } from './player.js';
 import { initAudio, setSound } from './audio.js';
@@ -91,8 +91,10 @@ export function toggleFly() {
 export function runAction() {
   if (G.paused) return;
   if (G.build) { buildAt(0, 0); return; }
-  if (G.curAction) { G.curAction.run(); tutNote('act'); }
+  if (G.curAction) { perform(G.curAction); tutNote('act'); }
 }
+/* Ein Modul darf die Aktion übernehmen (z. B. mit Fortschritt), sonst läuft sie sofort */
+function perform(a) { if (!collect('intercept', a).length) a.run(); }
 /* Aktionsknopf: Beschriftung folgt dem, was gerade möglich ist */
 export function drawAction() {
   const b = $('#bAct');
@@ -101,7 +103,7 @@ export function drawAction() {
   const more = (!G.build && G.curAction && G.curAction.more) || [];
   ['#bAct2', '#bAct3'].forEach((id, i) => { const el = $(id), m = more[i]; el.classList.toggle('hide', !m); if (m) el.innerHTML = m.label + ` <kbd>${'QR'[i]}</kbd>`; });
 }
-export function runMore(i) { const m = !G.paused && !G.build && G.curAction && G.curAction.more && G.curAction.more[i]; if (m) { m.run(); tutNote('act'); } }
+export function runMore(i) { const m = !G.paused && !G.build && G.curAction && G.curAction.more && G.curAction.more[i]; if (m) { perform(m); tutNote('act'); } }
 
 /* ---------- TITEL, MENÜ, HILFE ---------- */
 const sheet = id => $(id);
