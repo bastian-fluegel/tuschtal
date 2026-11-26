@@ -69,8 +69,9 @@ function updateParticles(dt) {
     if (p.life <= 0) continue;
     p.age += dt; p.life -= dt;
     if (p.home && p.age > .25) {       /* ein Teil der Ernte fliegt sichtbar zum Spieler */
-      _t.copy(cam.position); _t.y -= .5; _v.subVectors(_t, p.s.position);
-      if (_v.length() < .45) p.life = 0;
+      _t.copy(cam.position); _t.y -= 1; _v.subVectors(_t, p.s.position);
+      const dist = _v.length(); if (dist < 1.1) p.life = 0;
+      p.size = Math.min(p.size, .05 + dist * .06);       /* kleiner werden, nicht vor der Linse verschmieren */
       p.v.lerp(_v.normalize().multiplyScalar(9), Math.min(1, dt * 6));
     } else p.v.y -= p.grav * dt;
     p.s.position.addScaledVector(p.v, dt);
@@ -223,7 +224,7 @@ const CSS = `
 .fx-layer{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
 .fx-float{position:absolute;transform:translate(-50%,-50%);font:600 30px 'Caveat',cursive;color:var(--ink);text-shadow:0 0 4px var(--paper),0 0 9px var(--paper);white-space:nowrap;animation:fxRise 1.5s ease-out forwards}
 @keyframes fxRise{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}15%{opacity:1;transform:translate(-50%,-60%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-240%) scale(1)}}
-.stat{position:relative}
+.stat{position:relative;justify-self:start}
 .fx-chip{position:absolute;left:100%;margin-left:6px;top:50%;font:600 21px 'Caveat',cursive;color:var(--wash);text-shadow:0 0 3px var(--paper);white-space:nowrap;animation:fxChip 1.6s ease-out forwards}
 @keyframes fxChip{0%{opacity:0;transform:translate(-4px,-50%)}15%{opacity:1;transform:translate(0,-50%)}100%{opacity:0;transform:translate(12px,-50%)}}
 .stat.fx-up i{animation:fxGlow .7s ease-out}
