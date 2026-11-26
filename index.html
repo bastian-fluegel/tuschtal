@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Tuschtal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ruhig, gemütlich, ein Spiel wie ein Skizzenbuch
+   IDEA: ein Aquarell-Tagebuch, in dem man lebt; Titel wie ein Buchumschlag
+   PICTURE: die Spielwelt selbst, Vollbild, im Titel kreist die Kamera ums Häuschen
+   COLOUR and TYPE: Papier #efe6d2, Tusche #2b2622, Indigo #3f5f8a, Ocker #efd29b; Caveat + Patrick Hand
+   LAYOUT: Werte oben links, Menü oben rechts, Joystick unten links, Aktionen unten rechts */
+:root{color-scheme:light;--paper:#efe6d2;--ink:#2b2622;--ink2:#5a4f45;--wash:#3f5f8a;--ochre:#efd29b;--card:rgba(248,242,228,.92);--hand:16px 13px 18px 12px/13px 18px 12px 16px}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font:17px/1.4 'Patrick Hand',system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#paper{position:fixed;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.6;z-index:1}
+#vig{position:fixed;inset:0;pointer-events:none;z-index:1;box-shadow:inset 0 0 90px 10px rgba(120,92,55,.32)}
+#tired{position:fixed;inset:0;pointer-events:none;z-index:1;box-shadow:inset 0 0 160px 60px rgba(30,30,60,.75);opacity:0;transition:opacity 1s}
+.hud{position:fixed;z-index:3}
+body.title .ingame{display:none!important}
+.b{min-width:48px;height:48px;padding:0 14px;border:1.6px solid var(--ink);background:var(--card);color:var(--ink);font:18px 'Patrick Hand',sans-serif;border-radius:var(--hand);display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.b:focus-visible,.it:focus-visible{outline:2.5px solid var(--wash);outline-offset:2px}
+.b:active{transform:scale(.96)}
+.b.on{background:#dbe4ee;border-color:var(--wash);color:#24405f}
+.b.main{height:58px;padding:0 26px;border-width:2px;background:var(--ochre);font:600 28px 'Caveat',cursive}
+kbd{display:none;font:13px/1.2 'Patrick Hand',sans-serif;border:1px solid var(--ink2);border-bottom-width:2px;border-radius:5px;padding:1px 5px;color:var(--ink2);background:rgba(255,255,255,.4)}
+body.kbd kbd{display:inline-block}
+/* oben links: Werte + Vorrat */
+.tl{top:calc(8px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));display:grid;gap:6px}
+.stats{display:grid;gap:3px;pointer-events:none}
+.stat{display:grid;grid-template-columns:62px 104px;align-items:center;font-size:15px}
+.stat i{display:block;height:13px;border:1.5px solid var(--ink);border-radius:8px 5px 9px 4px/5px 9px 4px 8px;background:rgba(248,242,228,.85);overflow:hidden}
+.stat b{display:block;height:100%;opacity:.85;transition:width .4s}
+.stat.warn{color:#9c3b2a}
+.stat.warn i{animation:pulse 1s infinite alternate}
+@keyframes pulse{to{border-color:#c0583f;background:rgba(240,190,170,.9)}}
+.inv{display:flex;gap:6px;flex-wrap:wrap}
+.inv .b{height:40px;padding:0 10px;font-size:16px}
+.inv .b strong{font-weight:400;font-family:'Caveat',cursive;font-size:22px;color:var(--wash)}
+.sub{font-size:15px;color:var(--ink2)}
+/* oben rechts */
+.tr{top:calc(8px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.clock{font-size:16px;padding:2px 10px;background:var(--card);border:1.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;pointer-events:none}
+/* unten links: Joystick, immer sichtbar */
+#joy{left:calc(28px + env(safe-area-inset-left));bottom:calc(28px + env(safe-area-inset-bottom));width:124px;height:124px;border:1.8px dashed var(--ink);border-radius:50%;background:rgba(248,242,228,.28);pointer-events:none;opacity:.55;transition:opacity .2s}
+#joy.active{opacity:.95;transition:none}
+#knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(63,95,138,.4);border:1.8px solid var(--ink)}
+body.build #joy{bottom:calc(126px + env(safe-area-inset-bottom))}
+body:not(.touch) #joy{display:none}
+/* unten rechts: Aktionen */
+.acts{right:calc(12px + env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.acts .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+body.build .acts{bottom:calc(122px + env(safe-area-inset-bottom))}
+.buildrow{display:none!important}
+body.build .buildrow{display:flex!important}
+/* Bau-Leiste */
+.pal{left:0;right:0;bottom:0;padding:10px max(12px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom));display:none;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;touch-action:pan-x;scrollbar-width:none;background:linear-gradient(rgba(239,230,210,0),rgba(239,230,210,.9) 35%)}
+body.build .pal{display:flex}
+.pal::-webkit-scrollbar{display:none}
+.it{flex:none;scroll-snap-align:start;width:78px;height:94px;padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);font:15px 'Patrick Hand',sans-serif;border-radius:14px 18px 12px 16px/16px 12px 18px 14px;cursor:pointer}
+.it img,.it svg{width:60px;height:60px;display:block}
+.it.on{border:2.5px solid var(--wash);background:#dfe7ef;color:#24405f}
+#cross{position:fixed;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border:1.6px solid var(--ink);border-radius:50% 45% 55% 48%;pointer-events:none;z-index:2;opacity:.6}
+/* Tutorial-Hinweis */
+.coach{position:fixed;left:50%;top:calc(42% + env(safe-area-inset-top));transform:translate(-50%,-50%);z-index:4;width:min(86vw,400px);padding:12px 16px 10px;background:var(--card);border:2px solid var(--wash);border-radius:18px 14px 20px 12px/14px 20px 12px 18px;text-align:center;font-size:19px;pointer-events:auto}
+.coach small{display:block;margin-top:6px;font-size:14px;color:var(--ink2);text-decoration:underline;cursor:pointer}
+.coach .step{font:600 20px 'Caveat',cursive;color:var(--wash);display:block}
+#toast{position:fixed;left:50%;bottom:calc(170px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4;max-width:min(84vw,420px);padding:8px 16px;background:var(--card);border:1.6px solid var(--ink);border-radius:16px 12px 18px 10px/12px 18px 10px 16px;font-size:18px;text-align:center;opacity:0;transition:opacity .35s;pointer-events:none}
+#toast.show{opacity:1}
+#fade{position:fixed;inset:0;z-index:4;background:#1c1a24;opacity:0;pointer-events:none;transition:opacity .9s;display:flex;align-items:center;justify-content:center;color:#efe6d2;font:600 44px 'Caveat',cursive;text-align:center;padding:24px}
+#fade.on{opacity:1;pointer-events:auto}
+/* Titelbildschirm */
+#title{position:fixed;inset:0;z-index:5;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(8vh + env(safe-area-inset-top)) 20px calc(6vh + env(safe-area-inset-bottom));background:linear-gradient(rgba(239,230,210,.55),rgba(239,230,210,0) 38%,rgba(239,230,210,0) 55%,rgba(239,230,210,.8))}
+body.title #title{display:flex}
+#title h1{margin:0;font:600 clamp(72px,20vw,128px)/.9 'Caveat',cursive;text-align:center;text-wrap:balance}
+#title .tag{margin:6px 0 0;font-size:20px;color:var(--ink2);text-align:center}
+#title .menu{display:grid;gap:10px;justify-items:center;width:min(100%,340px)}
+#title .menu .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+#title .ver{font-size:14px;color:var(--ink2)}
+/* Menüs */
+.sheet{position:fixed;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));background:rgba(43,38,34,.3)}
+.card{width:100%;max-width:480px;max-height:100%;overflow:auto;background:#f6efdf;border:2px solid var(--ink);border-radius:20px 16px 22px 14px/16px 22px 14px 20px;padding:20px 22px;touch-action:pan-y}
+.card h2{font:600 40px/1 'Caveat',cursive;margin:0 0 10px}
+.card h3{font:600 26px/1 'Caveat',cursive;margin:16px 0 6px}
+.card p{margin:4px 0}
+.list{display:grid;gap:8px}
+.list .b{width:100%;justify-content:flex-start}
+.ctl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;align-items:baseline}
+.ctl dt{font:600 22px/1 'Caveat',cursive;color:var(--wash);white-space:nowrap}
+.ctl dd{margin:0}
+.only-touch,.only-kbd{display:contents}
+body.kbd .only-touch{display:none}
+body:not(.kbd) .only-kbd{display:none}
+.card .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+#load{position:fixed;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--paper);font:600 36px 'Caveat',cursive;text-align:center;padding:20px}
+#load small{font:17px 'Patrick Hand',sans-serif;color:var(--ink2)}
+.baglist{display:grid;gap:8px}
+.baglist h3{margin:10px 0 0}
+#bBag.full strong{color:#9c3b2a}
+.it{position:relative}
+.it .cnt{position:absolute;top:4px;right:6px;font:600 20px 'Caveat',cursive;font-style:normal;color:var(--wash)}
+.it.empty{opacity:.45}
+.bagrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1.5px solid var(--ink);border-radius:var(--hand);background:rgba(255,255,255,.35)}
+.bagrow strong{font:600 24px 'Caveat',cursive;color:var(--wash);font-weight:600}
+.bagrow small{display:block;font-size:14px;color:var(--ink2)}
+.hide{display:none!important}
+@media (max-width:380px){.stat{grid-template-columns:56px 88px;font-size:14px}}
+@media (prefers-reduced-motion:reduce){.stat.warn i{animation:none}}
+</style>
+</head>
+<body class="title">
+<canvas id="c"></canvas>
+<div id="paper"></div><div id="vig"></div><div id="tired"></div>
+<div id="cross" class="ingame"></div>
+
+<div class="hud tl ingame">
+  <div class="stats" id="stats"></div>
+  <div class="inv" id="inv"></div>
+  <div class="sub hide" id="mode"></div>
+</div>
+<div class="hud tr ingame">
+  <button class="b" id="bMenu">Menü <kbd>Esc</kbd></button>
+  <div class="clock" id="clock"></div>
+</div>
+<div class="hud ingame" id="joy"><div id="knob"></div></div>
+<div class="hud acts ingame">
+  <button class="b hide" id="bAct3">Aktion</button>
+  <button class="b hide" id="bAct2">Aktion</button>
+  <button class="b main hide" id="bAct">Aktion</button>
+  <div class="row buildrow">
+    <button class="b" id="bRot">↻ Drehen <kbd>R</kbd></button>
+    <button class="b" id="bUndo">↶ Zurück</button>
+  </div>
+  <div class="row buildrow">
+    <button class="b" id="bFly">Fliegen <kbd>F</kbd></button>
+    <button class="b hide" id="bDown">Runter <kbd>⇧</kbd></button>
+  </div>
+  <div class="row">
+    <button class="b" id="bBuild">Bauen <kbd>B</kbd></button>
+    <button class="b" id="bUp">Springen <kbd>Leertaste</kbd></button>
+  </div>
+</div>
+<nav class="hud pal ingame" id="pal" aria-label="Bauteile"></nav>
+<div class="coach hide ingame" id="coach" role="status" aria-live="polite"><span class="step" id="coachStep"></span><span id="coachText"></span><small id="coachSkip">Tutorial überspringen</small></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="fade"></div>
+
+<section id="title" aria-labelledby="gname">
+  <div>
+    <h1 id="gname">Tuschtal</h1>
+    <p class="tag" id="gtag"></p>
+  </div>
+  <div class="menu">
+    <button class="b main" id="bPlay">Spielen</button>
+    <div class="row">
+      <button class="b" id="bHow">Steuerung</button>
+      <button class="b bSound">Ton: an</button>
+    </div>
+    <div class="ver" id="gver"></div>
+  </div>
+</section>
+
+<div class="sheet hide" id="menu" role="dialog" aria-modal="true" aria-labelledby="menuT">
+  <div class="card">
+    <h2 id="menuT">Pause</h2>
+    <div class="list">
+      <button class="b main" id="bResume">Weiterspielen</button>
+      <button class="b" id="bHow2">Steuerung und Tipps</button>
+      <button class="b bSound">Ton: an</button>
+      <button class="b" id="bTut">Tutorial neu starten</button>
+      <button class="b" id="bClear">Eigene Bauten löschen</button>
+      <button class="b" id="bReset">Neues Spiel beginnen</button>
+      <button class="b" id="bTitle">Zum Titelbildschirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet hide" id="bag" role="dialog" aria-modal="true" aria-labelledby="bagT">
+  <div class="card">
+    <h2 id="bagT">Rucksack</h2>
+    <p class="sub" id="bagCap"></p>
+    <div id="bagList" class="baglist"></div>
+    <div class="row"><button class="b main" id="bBagClose">Zurück ins Spiel</button></div>
+  </div>
+</div>
+
+<div class="sheet hide" id="help" role="dialog" aria-modal="true" aria-labelledby="helpT">
+  <div class="card">
+    <h2 id="helpT">Steuerung</h2>
+    <dl class="ctl">
+      <div class="only-touch">
+        <dt>Joystick</dt><dd>Daumen links aufsetzen und ziehen: laufen</dd>
+        <dt>Wischen</dt><dd>rechts über den Bildschirm: umsehen</dd>
+        <dt>Aktion</dt><dd>der große Knopf unten rechts erscheint, wenn du etwas tun kannst</dd>
+        <dt>Essen</dt><dd>oben links den Rucksack öffnen und Essen antippen</dd>
+      </div>
+      <div class="only-kbd">
+        <dt>W A S D</dt><dd>laufen, mit Shift rennen</dd>
+        <dt>Maus</dt><dd>gedrückt halten und ziehen: umsehen</dd>
+        <dt>E</dt><dd>Aktion (pflücken, trinken, schlafen, Feuer)</dd>
+        <dt>I</dt><dd>Rucksack öffnen, 1 – 9 direkt essen</dd>
+        <dt>Q · R</dt><dd>weitere Aktionen, wenn mehrere Knöpfe erscheinen</dd>
+        <dt>Leertaste</dt><dd>springen</dd>
+        <dt>B · Esc</dt><dd>Bauen · Menü</dd>
+      </div>
+    </dl>
+    <h3>Überleben</h3>
+    <dl class="ctl">
+      <dt>Essen</dt><dd>Beeren an Büschen, Äpfel an Bäumen. Sie wachsen am nächsten Tag nach.</dd>
+      <dt>Trinken</dt><dd>am Brunnen beim Haus oder am Seeufer</dd>
+      <dt>Energie</dt><dd>im Bett schlafen, nachts bis zum Morgen</dd>
+      <dt>Wärme</dt><dd>nachts wird es kalt. Im Haus ist es wärmer, am Kamin richtig warm. Holz gibt es an Bäumen.</dd>
+      <dt>Tiere</dt><dd>Rehe und Hasen fliehen. Bleib still stehen, dann kommen sie näher.</dd>
+    </dl>
+    <h3>Bauen</h3>
+    <p>Bauteile unten wählen, auf eine Stelle tippen oder „Setzen“ drücken. Ein Lagerfeuer kostet 3 Holz.</p>
+    <div class="row"><button class="b main" id="bHelpOk">Verstanden</button></div>
+  </div>
+</div>
+
+<div id="load">Die Welt wird gemalt …<small id="loadMsg">Pinsel werden ausgewaschen</small></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
