@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#efe6d2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tuschtal">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
 <title>Tuschtal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Patrick+Hand&display=swap" rel="stylesheet">
@@ -14,7 +22,7 @@
    LAYOUT: Werte oben links, Menü oben rechts, Joystick unten links, Aktionen unten rechts */
 :root{color-scheme:light;--paper:#efe6d2;--ink:#2b2622;--ink2:#5a4f45;--wash:#3f5f8a;--ochre:#efd29b;--card:rgba(248,242,228,.92);--hand:16px 13px 18px 12px/13px 18px 12px 16px}
 *{box-sizing:border-box;min-width:0}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font:17px/1.4 'Patrick Hand',system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--paper);color:var(--ink);font:17px/1.4 'Patrick Hand',system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
 #paper{position:fixed;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.6;z-index:1}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:1;box-shadow:inset 0 0 90px 10px rgba(120,92,55,.32)}
@@ -47,7 +55,9 @@ body.kbd kbd{display:inline-block}
 /* unten links: Joystick, immer sichtbar */
 #joy{left:calc(28px + env(safe-area-inset-left));bottom:calc(28px + env(safe-area-inset-bottom));width:124px;height:124px;border:1.8px dashed var(--ink);border-radius:50%;background:rgba(248,242,228,.28);pointer-events:none;opacity:.55;transition:opacity .2s}
 #joy.active{opacity:.95;transition:none}
-#knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(63,95,138,.4);border:1.8px solid var(--ink)}
+#knob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(63,95,138,.4);border:1.8px solid var(--ink);transition:background .15s}
+#joy.run{border-style:solid}
+#joy.run #knob{background:rgba(201,139,62,.75)}
 body.build #joy{bottom:calc(126px + env(safe-area-inset-bottom))}
 body:not(.touch) #joy{display:none}
 /* unten rechts: Aktionen */
@@ -192,19 +202,21 @@ body:not(.kbd) .only-kbd{display:none}
     <h2 id="helpT">Steuerung</h2>
     <dl class="ctl">
       <div class="only-touch">
-        <dt>Joystick</dt><dd>Daumen links aufsetzen und ziehen: laufen</dd>
+        <dt>Joystick</dt><dd>Daumen links aufsetzen und ziehen: laufen. Ganz weit ziehen: rennen (der Knopf wird ocker)</dd>
         <dt>Wischen</dt><dd>rechts über den Bildschirm: umsehen</dd>
         <dt>Aktion</dt><dd>der große Knopf unten rechts erscheint, wenn du etwas tun kannst</dd>
         <dt>Essen</dt><dd>oben links den Rucksack öffnen und Essen antippen</dd>
+        <dt>Vollbild</dt><dd>im Menü. Auf dem iPhone: im Browser „Teilen“ und „Zum Home-Bildschirm“, dann läuft das Spiel ohne Leiste.</dd>
       </div>
       <div class="only-kbd">
         <dt>W A S D</dt><dd>laufen, mit Shift rennen</dd>
-        <dt>Maus</dt><dd>gedrückt halten und ziehen: umsehen</dd>
-        <dt>E</dt><dd>Aktion (pflücken, trinken, schlafen, Feuer)</dd>
+        <dt>Maus</dt><dd>ins Bild klicken, dann bewegen: umsehen. Esc gibt die Maus frei.</dd>
+        <dt>E · Klick</dt><dd>Aktion (pflücken, trinken, schlafen, Feuer)</dd>
         <dt>I</dt><dd>Rucksack öffnen, 1 – 9 direkt essen</dd>
         <dt>Q · R</dt><dd>weitere Aktionen, wenn mehrere Knöpfe erscheinen</dd>
         <dt>Leertaste</dt><dd>springen</dd>
         <dt>B · Esc</dt><dd>Bauen · Menü</dd>
+        <dt>Bauen</dt><dd>Linksklick setzen, Rechtsklick abreißen, Mausrad oder 1 – 9 wählt das Bauteil, R dreht</dd>
       </div>
     </dl>
     <h3>Überleben</h3>

@@ -1,21 +1,28 @@
-import { $, PAPER } from './config.js';
+import { $, PAPER, QUALITY } from './config.js';
 import { GEO } from './geometry.js';
 import { MAT, U } from './shaders.js';
 import { PIECES } from './pieces.js';
 
 /* ---------- SZENE ---------- */
 export const canvas = $('#c');
-export const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+export const renderer = new THREE.WebGLRenderer({ canvas, antialias: QUALITY.aa, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, QUALITY.dprStart));
 renderer.setClearColor(PAPER);
 U.uDpr.value = renderer.getPixelRatio();
+U.uFogNear.value = QUALITY.fog[0]; U.uFogFar.value = QUALITY.fog[1];
 export const scene = new THREE.Scene();
 export const cam = new THREE.PerspectiveCamera(70, 1, .1, 700); cam.rotation.order = 'YXZ';
 export const sky = new THREE.Mesh(new THREE.SphereGeometry(320, 24, 16), MAT.sky); sky.renderOrder = -1; sky.frustumCulled = false; scene.add(sky);
 export const water = new THREE.Mesh(new THREE.PlaneGeometry(420, 420), MAT.water); water.rotation.x = -Math.PI / 2; water.renderOrder = 2; scene.add(water);
+/* Im Hochformat (Handy) wird das Blickfeld weiter, sonst sieht man nur einen schmalen Streifen */
 export function resize() {
-  renderer.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix();
+  const a = innerWidth / innerHeight;
+  renderer.setSize(innerWidth, innerHeight, false); cam.aspect = a;
+  cam.fov = a < 1 ? Math.min(90, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(35)) / a))) : 70;
+  cam.updateProjectionMatrix();
 }
+/* Bildschärfe zur Laufzeit ändern (device.js passt sie der Bildrate an) */
+export function setPixelRatio(r) { renderer.setPixelRatio(r); U.uDpr.value = r; resize(); }
 addEventListener('resize', resize); resize();
 export function draw() { renderer.render(scene, cam); }
 

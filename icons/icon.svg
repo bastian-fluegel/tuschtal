@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#efe6d2"/>
+  <circle cx="372" cy="150" r="58" fill="#efd29b" opacity=".9"/>
+  <path d="M40 380 C140 340 230 360 300 352 C380 344 440 360 472 372 L472 512 L40 512Z" fill="#9ab35a" opacity=".55"/>
+  <path d="M60 410 C170 392 300 400 452 396" fill="none" stroke="#6f8f46" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  <path d="M150 248 L256 158 L362 248" fill="#c2553e" opacity=".8"/>
+  <rect x="172" y="246" width="168" height="134" fill="#e8d6b4"/>
+  <rect x="176" y="250" width="160" height="40" fill="#3f5f8a" opacity=".25"/>
+  <rect x="236" y="306" width="42" height="74" fill="#8a6038" opacity=".85"/>
+  <rect x="192" y="276" width="30" height="30" fill="#3f5f8a" opacity=".55"/>
+  <rect x="294" y="276" width="30" height="30" fill="#3f5f8a" opacity=".55"/>
+  <g fill="none" stroke="#2b2622" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M138 254 L256 152 L374 254"/>
+    <path d="M172 246 L170 382 L342 380 L340 244"/>
+    <path d="M236 380 L236 306 L278 306 L278 380"/>
+    <path d="M192 276 h30 v30 h-30z M294 276 h30 v30 h-30z" stroke-width="6"/>
+    <path d="M312 212 L312 168 L336 168 L336 232" stroke-width="7"/>
+    <path d="M96 384 C170 378 330 384 420 380" stroke-width="7"/>
+  </g>
+</svg>

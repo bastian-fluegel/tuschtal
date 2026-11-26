@@ -146,6 +146,7 @@ export function findAction() {
   return best;
 }
 export function saveLife() {
+  if (!G.house) return;   /* noch beim Laden: sonst würde ein leerer Stand den echten Spielstand überschreiben */
   try { localStorage.setItem(LKEY, JSON.stringify({ T, S, INV, picked: G.picked, woodUsed: G.woodUsed, fires: G.fires, pos: [pos.x, pos.y, pos.z], yaw: G.yaw })); } catch (e) { }
 }
 export function loadLife() {

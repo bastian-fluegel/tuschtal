@@ -1,5 +1,5 @@
 import { hook } from './features.js';
-import { CS, RAD, SEG } from './config.js';
+import { CS, RAD, SEG, QUALITY } from './config.js';
 import { G, fruitAvail, ikey, pos } from './state.js';
 import { MAT } from './shaders.js';
 import { apples, bareTree, berries, bush, conifer, rock, tree } from './nature.js';
@@ -12,7 +12,7 @@ import { scene } from './engine.js';
 
 /* ---------- WELT: Chunks ---------- */
 export const chunks = new Map(), terrainMeshes = [];
-export const OFFS = []; for (let dz = -RAD; dz <= RAD; dz++) for (let dx = -RAD; dx <= RAD; dx++) if (dx * dx + dz * dz <= RAD * RAD + 1) OFFS.push([dx, dz]);
+export const OFFS = []; for (let dz = -RAD; dz <= RAD; dz++) for (let dx = -RAD; dx <= RAD; dx++) if (QUALITY.square || dx * dx + dz * dz <= RAD * RAD + 1) OFFS.push([dx, dz]);
 OFFS.sort((a, b) => (a[0] ** 2 + a[1] ** 2) - (b[0] ** 2 + b[1] ** 2));
 export function addNature(kind, x, y, z, r, list, owner, fruitChance) {
   const parts = kind === 'tree' ? tree(x, y, z, r) : kind === 'bare' ? bareTree(x, y, z, r) : kind === 'conifer' ? conifer(x, y, z, r) : kind === 'bush' ? bush(x, y, z, r) : rock(x, y, z, r);

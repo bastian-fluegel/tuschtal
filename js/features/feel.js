@@ -29,6 +29,8 @@ const COL = {
 const DEFAULT = ['#c98b3e', '#efd29b', '#8a6038'];
 const SPARK = ['#ffcf5a', '#e86a2a', '#ffe7a8'], DUST = ['#d8ccb4', '#b7afa3', '#efe6d2'], CRUMB = ['#f2b8ae', '#b7afa3', '#d8ccb4'];
 const pick = a => a[Math.floor(Math.random() * a.length)];
+/* kurzes Brummen auf dem Handy (Android; iPhones unterstützen das nicht) */
+const buzz = ms => { if (G.coarse && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { } };
 
 /* ---------- Partikel: kleine Pigmentflecken ---------- */
 function blotTex() {
@@ -116,7 +118,7 @@ function fx(kind, d) {
     const I = ITEMS[d.k], at = d.x !== undefined ? d : front(1.1, 1.1);
     burst(at.x, at.y, at.z, COL[d.k] || DEFAULT, 8 + Math.min(8, d.n * 2), { home: true });
     floatText(at, `+${d.n} ${I ? (d.n === 1 ? I.one : I.name) : d.k}`);
-    sfx('gain'); bump();
+    sfx('gain'); bump(); buzz(18);
   } else if (kind === 'eat') {
     const f = FOODS[d.k]; sfx(f && !f.food ? 'gulp' : 'crunch');
   } else if (kind === 'drink') {
@@ -126,7 +128,7 @@ function fx(kind, d) {
     burst(d.x, d.y + .2, d.z, SPARK, 14, { speed: 1, up: 3, grav: -1.5, size: .1, life: 1.2, glow: true });
     sfx('whoosh');
   } else if (kind === 'done') { sfx('chime'); bump(); }
-  else if (kind === 'build') { burst(d.x, d.y + .1, d.z, DUST, 14, { speed: 2.6, up: 1, grav: 3, size: .3, life: .8 }); sfx('thock'); }
+  else if (kind === 'build') { buzz(10); burst(d.x, d.y + .1, d.z, DUST, 14, { speed: 2.6, up: 1, grav: 3, size: .3, life: .8 }); sfx('thock'); }
   else if (kind === 'erase') { burst(d.x, d.y + .6, d.z, CRUMB, 16, { speed: 2, up: 2.5, size: .16, life: .8 }); sfx('erase'); }
 }
 
@@ -147,7 +149,7 @@ function workTick(dt, k) {
   const a = ch.a, at = a.at;
   if (a.anim === 'chop') {
     if (ch.n < CHOP_HITS.length && k >= CHOP_HITS[ch.n]) {
-      ch.n++; sfx('chop'); shake = 1;
+      ch.n++; sfx('chop'); shake = 1; buzz(12);
       if (at) burst(at.x, at.y + 1, at.z, COL.wood, 5, { speed: 2.4, up: 2, size: .12, life: .6 });
     }
   } else if (a.anim === 'pick') {

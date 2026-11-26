@@ -1,0 +1,16 @@
+{
+  "name": "Tuschtal",
+  "short_name": "Tuschtal",
+  "description": "Ein gemütliches Überlebensspiel im Skizzenbuch",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "background_color": "#efe6d2",
+  "theme_color": "#efe6d2",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

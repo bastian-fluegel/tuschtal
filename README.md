@@ -10,6 +10,19 @@ Module brauchen einen Webserver (Doppelklick auf index.html reicht nicht):
 
 Dann http://localhost:8000 öffnen.
 
+## Handy und Computer
+Das Spiel erkennt beim Start, ob es auf einem Handy, Tablet oder Computer läuft (`DEVICE`, `QUALITY` in config.js).
+
+| | Handy | Tablet | Computer |
+|---|---|---|---|
+| Sichtweite | 2 Chunks (Quadrat), Nebel näher | 3 Chunks | 3 Chunks |
+| Bildschärfe | startet 1,25, passt sich an (0,75 – 1,5) | wie Handy | startet 1,5, passt sich an (1 – 2) |
+| Kantenglättung | aus | aus | an |
+| Steuerung | Joystick, ganz weit ziehen = rennen, Vibration | wie Handy | Maus fangen (Klick, Esc gibt frei), Mausrad wählt Bauteile |
+
+Dazu überall: Hochformat bekommt ein weiteres Blickfeld, Vollbild im Menü, Bildschirm bleibt an, Pause beim Verlassen der App, als App installierbar (manifest.webmanifest, icons/).
+Zum Ausprobieren erzwingen: `?geraet=handy`, `?geraet=tablet` oder `?geraet=pc` an die Adresse hängen.
+
 ## Module (js/)
 | Datei | Aufgabe |
 |---|---|
@@ -33,6 +46,7 @@ Dann http://localhost:8000 öffnen.
 | ui.js | HUD, Titel, Menü, Tutorial, Bau-Leiste |
 | main.js | Start und Spielschleife |
 | features.js | Andockpunkte (Hooks) für abschaltbare Module |
+| device.js | Handy/PC: Bildschärfe nach Bildrate, Bildschirm anlassen, Vollbild, Pause beim Verlassen |
 
 ## Module (js/features/) – abschaltbar
 In `config.js`: `FEATURES = { cooking: true, crafting: true, feel: true }`. Auf `false` gesetzt, wird das Modul gar nicht geladen.

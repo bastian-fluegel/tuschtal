@@ -5,7 +5,7 @@ import { height } from './terrain.js';
 import { pieces } from './building.js';
 
 /* ---------- SPIELER ---------- */
-export const keys = {}, hold = { up: false, down: false }, joy = { x: 0, y: 0 };
+export const keys = {}, hold = { up: false, down: false }, joy = { x: 0, y: 0, run: false };
 export const down = new THREE.Raycaster(), side = new THREE.Raycaster();
 export const DOWN = new THREE.Vector3(0, -1, 0), _o = new THREE.Vector3(), _d = new THREE.Vector3();
 export function nearBodies() { return pieces.filter(p => Math.abs(p.x - pos.x) < 5 && Math.abs(p.z - pos.z) < 5).map(p => p.body); }
@@ -25,7 +25,7 @@ export function move(dt) {
   let mz = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0) + joy.y;
   const l = Math.hypot(mx, mz); if (l > 1) { mx /= l; mz /= l; }
   const shift = keys.ShiftLeft || keys.ShiftRight;
-  G.running = !G.fly && shift && l > .1; G.moving = l > .1;
+  G.running = !G.fly && (shift || joy.run) && l > .1; G.moving = l > .1;
   const tired = S.energy < 15 ? .6 : 1;
   const sp = G.fly ? 14 : (G.running ? 9.5 : 6) * tired, s = Math.sin(G.yaw), c = Math.cos(G.yaw);
   const dx = (mx * c + mz * s) * sp * dt, dz = (-mx * s + mz * c) * sp * dt, near = nearBodies();

@@ -26,6 +26,7 @@ Tuschtal ist ein gemütliches Überlebensspiel in einer endlosen Landschaft im S
 - Module docken nur über die Hooks in `js/features.js` an (`init`, `update`, `chunk`, `override`, `fireActions`, `waterActions`, `pieceActions`, `newDay`, `reset`). Der Kern kennt keine Module.
 - Module tragen ihre Daten selbst ein (ITEMS, FOODS, PIECES) und bringen eigenes CSS, eigene Fenster (`.sheet.feature`) und eigenen Hilfetext mit.
 - Bauteile: Einträge in `PIECES` (`js/pieces.js`). `use: 'sleep' | 'drink' | 'fire' | 'craft' | 'store'`, `fine: true` für das halbe Raster, `sink: true` für Teile, die in den Hang sinken dürfen, `costItems` für Möbel aus dem Rucksack.
+- Gerät: `DEVICE` und `QUALITY` in `config.js` (Handy, Tablet, Computer; erzwingen mit `?geraet=handy|tablet|pc`). `device.js` passt die Bildschärfe der Bildrate an, hält den Bildschirm an, bietet Vollbild und pausiert beim Verlassen. Am Computer wird die Maus gefangen (`input.js`), am Handy rennt man mit weit gezogenem Joystick.
 - Spielstände liegen in localStorage (Schlüssel `aquarellwelt-*`, bewusst beibehalten, damit alte Spielstände weiter funktionieren).
 
 ## Regeln für Änderungen
@@ -46,9 +47,11 @@ Tuschtal ist ein gemütliches Überlebensspiel in einer endlosen Landschaft im S
 - Fertig: Welt, Häuschen, Überleben, Tag/Nacht, Tiere, Geräusche, Titel, Menü, Tutorial, Rucksack (24 Plätze), Bauen mit Sockel gegen Schweben.
 - Modul `cooking`: Pilze, Kräuter, Angeln, Wasser schöpfen, Kochstelle mit Spieß/Topf/Pfanne, 12 Rezepte, Rezeptbuch, Haltbarkeit.
 - Modul `crafting`: Steine, Fasern, Lehm, Bretter, Seil, Werkbank, 6 Werkzeuge mit Effekten über `MODS`, 15 Möbel, Truhe.
+- Modul `feel`: Sammeln mit Fortschritt (Hooks `intercept`, `fx`/`emit`, `rest`), Pigment-Partikel, schwebende Zahlen, Schritte, Wippen, Schlaf-Uhr, Vibration.
+- Geräteanpassung Handy/PC (siehe Technik).
 
 ## Offene Roadmap (Vorschlag, Reihenfolge nach Wirkung)
-1. Spielgefühl: Animationen und Fortschritt beim Sammeln und Schlafen, Partikel, mehr Rückmeldung.
+1. ~~Spielgefühl~~ (erledigt, Modul `feel`). Offen: auf echten Geräten feinjustieren (Dauer, Wippen).
 2. Ziel und Ausgangslage: ein Absatz Ausgangslage festlegen (warum allein im Tal, wem gehörte das Haus?), dann z. B. Erinnerungsstücke im Tal, die eine Geschichte erzählen und Dinge freischalten. Erst die Ausgangslage, dann die Story.
 3. Besondere Orte: Steg, Ruine, Aussichtsfelsen, Mühle.
 4. Bessere Modelle, zuerst Tiere und Bäume.

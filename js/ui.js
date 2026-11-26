@@ -149,9 +149,9 @@ function newGame() {
 /* ---------- TUTORIAL ----------
    Jeder Schritt hat einen Text für Touch und Tastatur und eine Bedingung. */
 const TUT = [
-  { touch: 'Setz den Daumen links auf und zieh, um zu laufen.', key: 'Lauf mit W A S D oder den Pfeiltasten.', done: t => t.walked > 5 },
-  { touch: 'Wisch rechts über den Bildschirm, um dich umzusehen.', key: 'Halte die Maustaste gedrückt und zieh, um dich umzusehen.', done: t => t.turned > 1.4 },
-  { touch: 'Geh zu einem Busch mit Beeren neben dem Haus. Unten rechts erscheint ein Knopf, tipp ihn an.', key: 'Geh zu einem Busch mit Beeren neben dem Haus und drück E, wenn unten rechts ein Knopf erscheint.', done: t => t.acted },
+  { touch: 'Setz den Daumen links auf und zieh, um zu laufen. Ganz weit ziehen heißt rennen.', key: 'Lauf mit W A S D oder den Pfeiltasten.', done: t => t.walked > 5 },
+  { touch: 'Wisch rechts über den Bildschirm, um dich umzusehen.', key: 'Klick ins Bild und beweg die Maus, um dich umzusehen. Esc gibt die Maus wieder frei.', done: t => t.turned > 1.4 },
+  { touch: 'Geh zu einem Busch mit Beeren neben dem Haus. Unten rechts erscheint ein Knopf, tipp ihn an.', key: 'Geh zu einem Busch mit Beeren neben dem Haus und drück E oder klick, wenn unten rechts ein Knopf erscheint.', done: t => t.acted },
   { touch: 'Öffne oben links den Rucksack und iss etwas.', key: 'Drück I für den Rucksack und iss etwas (oder direkt 1).', done: t => t.ate },
   { touch: 'Gut gemacht! Behalte deine vier Werte im Blick. Nachts wird es kalt, dein Häuschen schützt dich.', key: 'Gut gemacht! Behalte deine vier Werte im Blick. Nachts wird es kalt, dein Häuschen schützt dich.', done: t => t.time > 7 }
 ];

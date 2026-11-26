@@ -12,6 +12,7 @@
      audio     synthetische Geräusche              input     Touch, Maus, Tastatur
      ui        HUD, Titel, Menü, Tutorial, Rucksack
      features  Andockpunkte für abschaltbare Module
+     device    Handy/PC erkennen, Bildschärfe nach Bildrate, Vollbild, Bildschirm an
    Module (abschaltbar in config.js → FEATURES):
      features/cooking   Pilze, Kräuter, Angeln, Kochstelle, Rezeptbuch
      features/crafting  Steine, Fasern, Lehm, Werkbank, Werkzeuge, Möbel, Truhe
@@ -32,7 +33,8 @@ import { placeHouse } from './house.js';
 import { updateChunks } from './world.js';
 import { updateLights, updateSky } from './daynight.js';
 import { updateSound } from './audio.js';
-import './input.js';
+import { initDevice, updateDevice } from './device.js';
+import { updateLock } from './input.js';
 
 let last = performance.now(), uiT = 0, saveT = 0, orbit = 0;
 
@@ -64,7 +66,7 @@ function updateTweens(dt) {
 }
 
 function frame(t) {
-  const dt = Math.min(.05, (t - last) / 1000), ts = t / 1000; last = t;
+  const raw = (t - last) / 1000, dt = Math.min(.05, raw), ts = t / 1000; last = t;
   if (!G.started) titleCamera(dt);
   else if (!G.paused) { move(dt); tickLife(dt); }
   updateChunks(false); updateSky(); updateLights(dt, ts);
@@ -72,7 +74,7 @@ function frame(t) {
   sky.position.copy(cam.position); water.position.set(Math.round(cam.position.x), 0, Math.round(cam.position.z));
   U.uTime.value = ts;
   hook('update', dt, ts);
-  updateBuildPreview(); updateTweens(dt); updateTutorial(dt);
+  updateBuildPreview(); updateTweens(dt); updateTutorial(dt); updateDevice(raw); updateLock();
   if ((uiT += dt) > .2) {
     uiT = 0; drawStats();
     G.curAction = G.paused || G.build ? null : findAction(); drawAction();
@@ -92,7 +94,7 @@ function findSpawn() {
 }
 setTimeout(async () => {
   try {
-    initUI();
+    initUI(); initDevice();
     loadMsg('Das Häuschen wird gezimmert'); placeHouse(...findSpawn());
     if (!loadLife()) { pos.set(G.house.door.x, height(G.house.door.x, G.house.door.z), G.house.door.z); G.yaw = 0; }
     /* Module laden – in config.js unter FEATURES abschaltbar */
